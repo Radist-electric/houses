@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
 import { NavLink, useHistory } from 'react-router-dom'
+import { AuthContext } from '../context/AuthContext'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Button from '@material-ui/core/Button'
@@ -34,6 +35,8 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function ButtonAppBar() {
   const classes = useStyles()
   const history = useHistory()
+  const auth = useContext(AuthContext)
+  const buttonText = auth.isAuthenticated ? 'Выход' : 'Вход'
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,6 +51,16 @@ export default function ButtonAppBar() {
     history.push({
       pathname: '/auth'
     })
+  }
+
+  const logout = () => {
+    if (auth.isLocalStorage) {
+      localStorage.setItem(auth.storageName, JSON.stringify({}))
+      auth.changeUserData()
+      history.push({
+        pathname: '/auth'
+      })
+    }
   }
 
   return (
@@ -68,7 +81,7 @@ export default function ButtonAppBar() {
             <NavLink to="/about" className={classes.link}><MenuItem onClick={handleClose}>О программе</MenuItem></NavLink>
           </Menu>
           <NavLink to="/" className={classes.title}>reestrdoma</NavLink>
-          <Button color="inherit" onClick={authHandler}>Вход</Button>
+          <Button color="inherit" onClick={auth.isAuthenticated === true ? logout : authHandler}>{buttonText}</Button>
         </Toolbar>
       </AppBar>
     </div>

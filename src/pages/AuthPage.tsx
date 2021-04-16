@@ -1,5 +1,8 @@
-import React, { useState } from 'react'
+import { useState, useContext } from 'react'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
+import { AuthContext } from '../context/AuthContext'
+import { useHistory } from 'react-router-dom'
+import CustomizedSnackbars from '../components/alert'
 import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
@@ -37,34 +40,19 @@ const initForm = [
   }
 ]
 
-const isLocalStorage = storageAvailable('localStorage')
-
-function storageAvailable(x: string) {
-  try {
-    localStorage.setItem(x, x)
-    localStorage.removeItem(x)
-    return true
-  }
-  catch (e) {
-    return false
-  }
-}
-
-const storageName: string = 'housesUser'
-let initUser: any
-if (isLocalStorage) {
-  initUser = JSON.parse(localStorage.getItem(storageName) || '{}')
-}
-console.log('initUser', initUser)
-
-
 export const AuthPage = () => {
   const classes = useStyles()
-  // const [user, setUser] = useState(initUser)
+  const auth = useContext(AuthContext)
+  const history = useHistory()
+  
   const [form, setForm] = useState(initForm)
+  const [message, setMessage] = useState({
+    show: false,
+    severity: 'success',
+    text: ''
+  })
 
   const formHandler = () => {
-    console.log('submitted', form)
     let isFormValid = true
     const newForm = form.map((item) => {
       item.error = item.value.trim().length === 0
@@ -72,32 +60,53 @@ export const AuthPage = () => {
       return item
     })
     setForm(newForm)
-    console.log('isFormValid', isFormValid)
-    if(isFormValid) {
-      loginHandler({username: form[0].value, password: form[1].value})
+    if (isFormValid) {
+      loginHandler({ username: form[0].value, password: form[1].value })
       setForm(initForm)
     }
   }
 
-  const loginHandler = async (loginData: {username:string, password: string}) => {
-    console.log('loginHandler', loginData)
+  const loginHandler = async (loginData: { username: string, password: string }) => {
     try {
       const url: string = 'http://test-alpha.reestrdoma.ru/api/login/'
       const requestOptions = {
-        method: "POST", 
-        headers: {"Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData)
-    }
-      console.log('requestOptions', requestOptions)
-      
+      }
+
       const response = await fetch(url, requestOptions)
       const data = await response.json()
+      console.log('data', data)
 
       if (!response.ok) {
-        console.log(data.errors.error[0])
+        setMessage({
+          show: true,
+          severity: 'error',
+          text: data.errors.error[0]
+        })
+        return
       }
-      console.log('data', data)
-      
+
+      setMessage({
+        show: true,
+        severity: 'success',
+        text: `Приветствую, ${data.data.user.firstName}. Вы вошли. `
+      })
+
+      if (auth.isLocalStorage) {
+        const newUser = {
+          expiresIn: data.data.expiresIn,
+          token: data.data.token.access,
+          firstName: data.data.user.firstName
+        }
+        localStorage.setItem(auth.storageName, JSON.stringify(newUser))
+        auth.changeUserData()
+        history.push({
+          pathname: '/'
+        })
+      }
+
     } catch (e) {
       throw e
     }
@@ -109,6 +118,10 @@ export const AuthPage = () => {
     input.error = false
     const newForm = [...form.slice(0, index), input, ...form.slice(index + 1)]
     setForm(newForm)
+  }
+
+  const handleKey = (event: any) => {
+    if (event.key === 'Enter') formHandler()
   }
 
   const inputs = form.map((item, i) => {
@@ -124,26 +137,29 @@ export const AuthPage = () => {
         value={item.value}
         helperText={item.error && 'Поле не должно быть пустым'}
         onChange={event => onChangeHandler(event, i)}
+        onKeyUp={handleKey}
       />
     )
   })
 
   return (
-    <Paper className={classes.paper} elevation={0}>
-      <Typography variant="h5" component="h1">Авторизация</Typography>
-      <form className={classes.form} noValidate autoComplete="off">
-        {inputs}
-      </form>
-      <Button
-        variant='contained'
-        color='primary'
-        fullWidth={true}
-        size="large"
-        onClick={formHandler}
-      >
-        Войти
+    <>
+      <Paper className={classes.paper} elevation={0}>
+        <Typography variant="h5" component="h1">Авторизация</Typography>
+        <form className={classes.form} noValidate autoComplete="off">
+          {inputs}
+        </form>
+        <Button
+          variant='contained'
+          color='primary'
+          fullWidth={true}
+          size="large"
+          onClick={formHandler}
+        >
+          Войти
       </Button>
-    </Paper>
-
+      </Paper>
+      <CustomizedSnackbars message={message} />
+    </>
   )
 }
