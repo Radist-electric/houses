@@ -2,6 +2,7 @@ import { useState, useContext, useEffect, useCallback } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { Loader } from '../components/Loader'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
+import TablePaginationActions from '../components/table'
 import InputLabel from '@material-ui/core/InputLabel'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
@@ -17,6 +18,9 @@ const useStyles = makeStyles((theme: Theme) =>
     selectEmpty: {
       marginTop: theme.spacing(2),
     },
+    table: {
+      marginTop: theme.spacing(5),
+    },
   }),
 )
 
@@ -26,6 +30,7 @@ export const HousesPage = () => {
   const [companies, setCompanies] = useState(null)
   const [houses, setHouses] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showTable, setShowTable] = useState(false)
   const [message, setMessage] = useState({
     show: false,
     severity: 'success',
@@ -81,14 +86,11 @@ export const HousesPage = () => {
     }
     try {
       const data = await request(url, requestOptions)
-      console.log('data houses', data)
       setHouses(data.errors ? null : data)
     } catch (e) { }
   }, [auth.token])
 
   const request = async (url: string, requestOptions: any) => {
-    console.log('request url', url)
-
     setLoading(true)
     try {
       const response = await fetch(url, requestOptions)
@@ -113,12 +115,16 @@ export const HousesPage = () => {
   // Проверяем изменения Select
   useEffect(() => {
     console.log('select', select)
-
     if (select.data) {
       const company_id = select.data[0]
       const page = 1
       const perPage = 10
-      getHouses(company_id, page, perPage)
+      if (+select.data[1] === 0 || select.data[1] === undefined) {
+        setShowTable(false)
+      } else {
+        setShowTable(true)
+        getHouses(company_id, page, perPage)
+      }
     }
   }, [select, getHouses])
 
@@ -129,7 +135,6 @@ export const HousesPage = () => {
       return <option value={[item.id, item.housesCount]} key={index}>{item.name}</option>
     })
   }
-
 
 
   return (
@@ -156,6 +161,11 @@ export const HousesPage = () => {
           {options}
         </Select>
       </FormControl>}
+
+      <div className={classes.table}>
+        {showTable && <TablePaginationActions houses={houses} />}
+        {!showTable && <Typography variant="body1" component="p">Данные по домам отсутствуют.</Typography>}
+      </div>
 
       <CustomizedSnackbars message={message} />
     </>
