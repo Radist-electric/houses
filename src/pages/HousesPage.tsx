@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, useCallback } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { Loader } from '../components/Loader'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
@@ -24,42 +24,33 @@ export const HousesPage = () => {
   const classes = useStyles()
   const auth = useContext(AuthContext)
   const [companies, setCompanies] = useState(null)
+  const [houses, setHouses] = useState(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({
     show: false,
     severity: 'success',
     text: ''
   })
-  const [select, setSelect] = useState<{ id: string | number; name: string }>({
-    id: '',
-    name: '',
+  const [select, setSelect] = useState<{ data: any; name: string }>({
+    data: '',
+    name: 'Company Data'
   })
-
-  console.log('select', select)
 
   const handleChange = (event: React.ChangeEvent<{ id?: string; value: unknown }>) => {
     const name = event.target.id as keyof typeof select;
+    const value = JSON.parse(JSON.stringify(event.target.value)).split(',')
     setSelect({
       ...select,
-      [name]: event.target.value,
+      [name]: value
     })
   }
 
+  // ComponentDidMount
   useEffect(() => {
     if (auth.isAuthenticated) {
       getCompanies()
     }
-
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    console.log('useEffect companies')
-
-    if (companies !== null) {
-      console.log('companies', companies)
-
-    }
-  }, [companies])
 
   const getCompanies = async () => {
     const url: string = 'http://test-alpha.reestrdoma.ru/api/reestrdoma/companies/'
@@ -73,13 +64,31 @@ export const HousesPage = () => {
 
     try {
       const data = await request(url, requestOptions)
-      console.log('data', data)
+      console.log('data companies', data)
       setCompanies(data.errors ? null : data)
 
     } catch (e) { }
   }
 
+  const getHouses = useCallback(async (company_id: any, page: number, perPage: number) => {
+    const url: string = `http://test-alpha.reestrdoma.ru/api/reestrdoma/company/houses/${company_id}/?page=${page}&perPage=${perPage}`
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${auth.token}`
+      }
+    }
+    try {
+      const data = await request(url, requestOptions)
+      console.log('data houses', data)
+      setHouses(data.errors ? null : data)
+    } catch (e) { }
+  }, [auth.token])
+
   const request = async (url: string, requestOptions: any) => {
+    console.log('request url', url)
+
     setLoading(true)
     try {
       const response = await fetch(url, requestOptions)
@@ -101,11 +110,23 @@ export const HousesPage = () => {
     }
   }
 
+  // Проверяем изменения Select
+  useEffect(() => {
+    console.log('select', select)
+
+    if (select.data) {
+      const company_id = select.data[0]
+      const page = 1
+      const perPage = 10
+      getHouses(company_id, page, perPage)
+    }
+  }, [select, getHouses])
+
   let options
   if (companies !== null) {
     const array = JSON.parse(JSON.stringify(companies))
     options = array.data.map((item: any, index: any) => {
-      return <option value={item.id} key={index}>{item.name}</option>
+      return <option value={[item.id, item.housesCount]} key={index}>{item.name}</option>
     })
   }
 
@@ -121,17 +142,17 @@ export const HousesPage = () => {
       {loading && <Loader />}
 
       {(companies !== null) && <FormControl className={classes.formControl}>
-        <InputLabel htmlFor="age-native-simple">Список домов</InputLabel>
+        <InputLabel htmlFor="age-native-simple">Выберите компанию</InputLabel>
         <Select
           native
           autoWidth={true}
-          value={select.id}
+          value={select.data}
           onChange={handleChange}
           inputProps={{
-            id: 'id'
+            id: 'data'
           }}
         >
-          <option aria-label="Выберите дом" value="" />
+          <option aria-label="Выберите компанию" value="" />
           {options}
         </Select>
       </FormControl>}
