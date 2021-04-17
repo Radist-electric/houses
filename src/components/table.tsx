@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { withStyles, Theme, createStyles, makeStyles } from '@material-ui/core/styles'
+import { withStyles, Theme, createStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -30,21 +30,10 @@ const StyledTableRow = withStyles((theme: Theme) =>
   }),
 )(TableRow)
 
-const useStyles = makeStyles({
-  table: {
-    minWidth: 700,
-  },
-})
-
 export default function CustomizedTables(props: any) {
-  console.log('props table', props)
-  const classes = useStyles()
   const [data, setData] = useState(null)
-  console.log('data', data)
-  
 
   useEffect(() => {
-    console.log('useEffect table props')
     if (props.houses !== null) {
       const houses = JSON.parse(JSON.stringify(props.houses.data)).map((item: any, index: number) => {
         return {
@@ -54,8 +43,6 @@ export default function CustomizedTables(props: any) {
           createdAt: item.createdAt
         }
       })
-      console.log('houses', houses)
-      
       setData(houses)
     }
   }, [props])
@@ -68,22 +55,22 @@ export default function CustomizedTables(props: any) {
         <StyledTableCell component="th" scope="row">
           {row.id}
         </StyledTableCell>
-        <StyledTableCell align="right">{row.address}</StyledTableCell>
-        <StyledTableCell align="right">{row.reestrFlatCount}</StyledTableCell>
-        <StyledTableCell align="right">{row.createdAt}</StyledTableCell>
+        <StyledTableCell>{row.address}</StyledTableCell>
+        <StyledTableCell>{row.reestrFlatCount}</StyledTableCell>
+        <StyledTableCell>{row.createdAt}</StyledTableCell>
       </StyledTableRow>
     ))
   }
 
   return (
     <TableContainer component={Paper}>
-      <Table className={classes.table} aria-label="customized table">
+      <Table aria-label="customized table">
         <TableHead>
           <TableRow>
             <StyledTableCell>id</StyledTableCell>
-            <StyledTableCell align="right">Адрес</StyledTableCell>
-            <StyledTableCell align="right">Кол-во квартир</StyledTableCell>
-            <StyledTableCell align="right">Дата добавления</StyledTableCell>
+            <StyledTableCell>Адрес</StyledTableCell>
+            <StyledTableCell>Кол-во квартир</StyledTableCell>
+            <StyledTableCell>Дата добавления</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>

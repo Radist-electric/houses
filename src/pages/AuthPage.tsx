@@ -44,7 +44,7 @@ export const AuthPage = () => {
   const classes = useStyles()
   const auth = useContext(AuthContext)
   const history = useHistory()
-  
+
   const [form, setForm] = useState(initForm)
   const [message, setMessage] = useState({
     show: false,
@@ -102,9 +102,11 @@ export const AuthPage = () => {
         }
         localStorage.setItem(auth.storageName, JSON.stringify(newUser))
         auth.changeUserData()
-        history.push({
-          pathname: '/'
-        })
+        setTimeout(() => {
+          history.push({
+            pathname: '/'
+          })
+        }, 5000)
       }
 
     } catch (e) {

@@ -42,7 +42,6 @@ export const App = () => {
   const changeUserData = () => {
     const newUser = JSON.parse(localStorage.getItem(storageName) || '{}')
     setUser(newUser)
-    
   }
 
   return (
