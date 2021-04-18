@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 )
 
+// Начальные данные формы регистрации
 const initForm = [
   {
     label: 'Электронная почта',
@@ -52,6 +53,7 @@ export const AuthPage = () => {
     text: ''
   })
 
+  // Подтверждение формы
   const formHandler = () => {
     let isFormValid = true
     const newForm = form.map((item) => {
@@ -66,6 +68,7 @@ export const AuthPage = () => {
     }
   }
 
+  // Запрос на сервер для авторизации
   const loginHandler = async (loginData: { username: string, password: string }) => {
     try {
       const url: string = 'http://test-alpha.reestrdoma.ru/api/login/'
@@ -77,7 +80,6 @@ export const AuthPage = () => {
 
       const response = await fetch(url, requestOptions)
       const data = await response.json()
-      console.log('data', data)
 
       if (!response.ok) {
         setMessage({
@@ -94,6 +96,7 @@ export const AuthPage = () => {
         text: `Приветствую, ${data.data.user.firstName}. Вы вошли. `
       })
 
+      // Сохраняем данные авторизованного пользователя в LocalStorage
       if (auth.isLocalStorage) {
         const newUser = {
           expiresIn: data.data.expiresIn,
@@ -114,6 +117,7 @@ export const AuthPage = () => {
     }
   }
 
+  // Обработчик полей ввода
   const onChangeHandler = (event: any, index: any) => {
     const input = { ...form[index] }
     input.value = event.target.value
@@ -122,10 +126,12 @@ export const AuthPage = () => {
     setForm(newForm)
   }
 
+  // При фокусе на input переходим на обработчик формы по нажатию ENTER
   const handleKey = (event: any) => {
     if (event.key === 'Enter') formHandler()
   }
 
+  // Формируем вёрстку полей ввода
   const inputs = form.map((item, i) => {
     return (
       <TextField

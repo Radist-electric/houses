@@ -57,7 +57,7 @@ export default function CustomizedTables(props: any) {
         </StyledTableCell>
         <StyledTableCell>{row.address}</StyledTableCell>
         <StyledTableCell>{row.reestrFlatCount}</StyledTableCell>
-        <StyledTableCell>{row.createdAt}</StyledTableCell>
+        <StyledTableCell>{new Date(Date.parse(row.createdAt)).toLocaleDateString()}</StyledTableCell>
       </StyledTableRow>
     ))
   }

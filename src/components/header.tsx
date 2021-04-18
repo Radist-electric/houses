@@ -53,6 +53,7 @@ export default function ButtonAppBar() {
     })
   }
 
+  // Для выхода из системы удаляем данные пользователя из LocalStorage
   const logout = () => {
     if (auth.isLocalStorage) {
       localStorage.setItem(auth.storageName, JSON.stringify({}))

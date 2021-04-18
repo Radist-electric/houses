@@ -60,6 +60,7 @@ export const HousesPage = () => {
     perPage: 10
   })
 
+  // Обработчик изменений Select
   const handleChange = (event: React.ChangeEvent<{ id?: string; value: unknown }>) => {
     const name = event.target.id as keyof typeof select;
     const value = JSON.parse(JSON.stringify(event.target.value)).split(',')
@@ -88,7 +89,6 @@ export const HousesPage = () => {
     }
     try {
       const data = await request(url, requestOptions)
-      // console.log('data companies', data)
       setCompanies(data.errors ? null : data)
 
     } catch (e) { }
@@ -106,7 +106,6 @@ export const HousesPage = () => {
     }
     try {
       const data = await request(url, requestOptions)
-      console.log('data houses', data)
       setHouses(data.errors ? null : data)
 
       setPagination({
@@ -119,7 +118,7 @@ export const HousesPage = () => {
 
 
     } catch (e) { }
-  }, [auth.token])
+  }, [auth.token]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Запрос на сервер
   const request = async (url: string, requestOptions: any) => {
@@ -146,7 +145,6 @@ export const HousesPage = () => {
 
   // Проверяем изменения Select
   useEffect(() => {
-    // console.log('select', select)
     if (select.data) {
       const housesCount = +select.data[1]
 

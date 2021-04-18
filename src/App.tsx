@@ -39,6 +39,7 @@ export const App = () => {
   const [user, setUser] = useState(initUser)
   const isAuthenticated = !!user.token
 
+  // После успешной авторизации запоминаем данные пользователя
   const changeUserData = () => {
     const newUser = JSON.parse(localStorage.getItem(storageName) || '{}')
     setUser(newUser)
